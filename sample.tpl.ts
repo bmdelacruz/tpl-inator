@@ -34,6 +34,21 @@ class SampleTpl extends Template<SampleComponent> {
     }
 }
 
-const template = new SampleTpl();
-console.log(TemplateGenerator.makeFileNameFor(template));
-console.log(TemplateGenerator.generateStringFrom(template));
+function getProperty<T, K extends keyof T>(o: T, name: K) {
+    return o[name];
+}
+
+function getPropertyType<T, K extends keyof T>(o: T, key: K) {
+    return typeof o[key];
+}
+
+function getPropertyTypeOf(a: any, key: string) {
+    return getPropertyType(a.prototype, key);
+}
+
+// const component = new SampleComponent();
+console.log(getPropertyTypeOf(SampleComponent, 'sayHello'));
+
+// const template = new SampleTpl();
+// console.log(TemplateGenerator.makeFileNameFor(template));
+// console.log(TemplateGenerator.generateStringFrom(template));

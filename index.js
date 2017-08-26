@@ -147,18 +147,39 @@ var InterpolationElement = (function () {
     return InterpolationElement;
 }());
 exports.InterpolationElement = InterpolationElement;
-var PropertyElement = (function () {
+var AccessorAppendable = (function () {
+    function AccessorAppendable() {
+        this.previousAccesses = [];
+    }
+    AccessorAppendable.prototype.access = function (callOrPropertyStr) {
+        if (this.previousAccesses.length > 0)
+            this.previousAccesses.push('.');
+        this.previousAccesses.push(callOrPropertyStr);
+    };
+    AccessorAppendable.prototype.getPreviousAccesses = function () {
+        return this.previousAccesses.join('');
+    };
+    return AccessorAppendable;
+}());
+exports.AccessorAppendable = AccessorAppendable;
+var PropertyElement = (function (_super) {
+    __extends(PropertyElement, _super);
     function PropertyElement(propertyKey) {
-        this.propertyKey = propertyKey;
+        var _this = _super.call(this) || this;
+        _this.access(propertyKey);
+        return _this;
     }
     PropertyElement.prototype.interpolate = function () {
-        return new InterpolationElement(this.propertyKey);
+        return new InterpolationElement(this.getPreviousAccesses());
     };
     PropertyElement.prototype.stringify = function () {
-        return this.propertyKey;
+        return this.getPreviousAccesses();
+    };
+    PropertyElement.prototype.setCurrentType = function (propertyKey) {
+        // this.currentType = Object[propertyKey];
     };
     return PropertyElement;
-}());
+}(AccessorAppendable));
 exports.PropertyElement = PropertyElement;
 // TODO: separate property access element from interpolation element
 // TODO: make it possible to access property (typed or untyped) of the property

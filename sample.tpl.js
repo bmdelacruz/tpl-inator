@@ -49,6 +49,17 @@ var SampleTpl = (function (_super) {
     };
     return SampleTpl;
 }(index_1.Template));
-var template = new SampleTpl();
-console.log(index_1.TemplateGenerator.makeFileNameFor(template));
-console.log(index_1.TemplateGenerator.generateStringFrom(template));
+function getProperty(o, name) {
+    return o[name];
+}
+function getPropertyType(o, key) {
+    return typeof o[key];
+}
+function getPropertyTypeOf(a, key) {
+    return getPropertyType(a.prototype, key);
+}
+// const component = new SampleComponent();
+console.log(getPropertyTypeOf(SampleComponent, 'sayHello'));
+// const template = new SampleTpl();
+// console.log(TemplateGenerator.makeFileNameFor(template));
+// console.log(TemplateGenerator.generateStringFrom(template));

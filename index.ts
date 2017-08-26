@@ -163,19 +163,24 @@ export abstract class AccessorAppendable {
     }
 }
 
-export class PropertyElement<Object> implements TemplateElement {
-    private propertyKey: keyof Object;
+export class PropertyElement<Object> extends AccessorAppendable implements TemplateElement {
+    private currentType: any;
 
     constructor(propertyKey: keyof Object) {
-        this.propertyKey = propertyKey;
+        super();
+        this.access(propertyKey);
     }
 
     interpolate(): InterpolationElement {
-        return new InterpolationElement(this.propertyKey);
+        return new InterpolationElement(this.getPreviousAccesses());
     }
 
     stringify(): string {
-        return this.propertyKey;
+        return this.getPreviousAccesses();
+    }
+
+    private setCurrentType(propertyKey: keyof Object) {
+        // this.currentType = Object[propertyKey];
     }
 }
 
