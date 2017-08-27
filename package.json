@@ -1,7 +1,7 @@
 {
   "name": "tpl-inator",
   "version": "0.0.1",
-  "description": "",
+  "description": "An experimental template generator that can be used with Angular to enable template static type checking.",
   "repository": {
     "type": "git",
     "url": "https://github.com/bmdelacruz/tpl-inator"
