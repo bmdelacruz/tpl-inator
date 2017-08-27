@@ -39,13 +39,17 @@ export abstract class ParentTemplateElement implements TemplateElement {
         this.addElements(elements);
     }
 
-    addAttribute(key: string, value?: string) {
+    addAttribute(key: string, value?: string | null) {
         this.attributes[key] = value || null;
     }
 
-    attr(key: string, value?: string) {
+    attr(key: string, value?: string | null) {
         this.addAttribute(key, value);
     }
+}
+
+export interface AttributeMap {
+    [key: string]: string | null | undefined
 }
 
 export abstract class ParentTemplateElementBuilder<T extends ParentTemplateElement> extends TemplateElementBuilder<T> {
@@ -69,13 +73,28 @@ export abstract class ParentTemplateElementBuilder<T extends ParentTemplateEleme
         return this;
     }
 
-    addAttribute(key: string, value?: string): this {
+    addAttribute(key: string, value?: string | null): this {
         this.templateElement.addAttribute(key, value);
         return this;
     }
 
-    attr(key: string, value?: string): this {
+    attr(key: string, value?: string | null): this {
         this.templateElement.attr(key, value);
+        return this;
+    }
+
+    addAttributes(attrMap: AttributeMap): this {
+        for (var key in attrMap) {
+            if (attrMap.hasOwnProperty(key)) {
+                var value = attrMap[key];
+                this.addAttribute(key, value);
+            }
+        }
+        return this;
+    }
+
+    attrs(attrMap: AttributeMap): this {
+        this.addAttributes(attrMap);
         return this;
     }
 }
@@ -161,65 +180,103 @@ export abstract class AccessorAppendable {
     protected getPreviousAccesses(): string {
         return this.previousAccesses.join('');
     }
+
+    passPreviousAccessesTo(a: AccessorAppendable) {
+        a.previousAccesses = this.previousAccesses;
+    }
 }
 
-export class PropertyElement<Object> extends AccessorAppendable implements TemplateElement {
-    private currentType: any;
-
-    constructor(propertyKey: keyof Object) {
+export class PropertyElement<T> extends AccessorAppendable implements TemplateElement {
+    constructor(key: keyof T, appendable?: AccessorAppendable) {
         super();
-        this.access(propertyKey);
+
+        if (appendable)
+            appendable.passPreviousAccessesTo(this);
+        this.access(key);
+    }
+
+    accessProperty(key: string): UnsafePropertyElement {
+        return new UnsafePropertyElement(key, this);
+    }
+
+    prop(key: string) {
+        return this.accessProperty(key);
     }
 
     interpolate(): InterpolationElement {
         return new InterpolationElement(this.getPreviousAccesses());
     }
 
+    itrpl8() {
+        return this.interpolate();
+    }
+
     stringify(): string {
         return this.getPreviousAccesses();
     }
 
-    private setCurrentType(propertyKey: keyof Object) {
-        // this.currentType = Object[propertyKey];
+    str() {
+        return this.stringify();
     }
 }
 
-// TODO: separate property access element from interpolation element
-// TODO: make it possible to access property (typed or untyped) of the property
-export class PropertyInterpolationElement<ForComponent> implements TemplateElement {
-    private componentPropertyKey: keyof ForComponent;
+export class UnsafePropertyElement extends PropertyElement<any> {
+    constructor(key: string, appendable?: AccessorAppendable) {
+        super(key, appendable);
+    }
+}
 
-    constructor(componentPropertyKey: keyof ForComponent) {
-        this.componentPropertyKey = componentPropertyKey;
+export class FunctionCallElement<T> implements TemplateElement {
+    private arguments: string[] = [];
+    private proto: T;
+    private key: keyof T;
+
+    constructor(proto: T, key: keyof T) {
+        this.proto = proto;
+        this.key = key;
+
+        if (typeof this.proto[this.key] !== 'function') {
+            throw new Error(`The property '${key}' is not a function of the component!`);
+        }
     }
 
+    addArg(argStr: string): this {
+	this.arguments.push(`${argStr}`);
+        return this;
+    }
+
+    arg(argStr: string) {
+        return this.addArg(argStr);
+    }
+
+    private static COMMA_STR = ', ';
     stringify(): string {
-        return `{{${this.componentPropertyKey}}}`;
+        let argumentArray: string[] = [];
+	this.arguments.forEach(arg => {
+            argumentArray.push(arg, FunctionCallElement.COMMA_STR);
+	});
+	argumentArray.pop();
+	let argumentStr = argumentArray.join('');
+
+	return `${this.key}(${argumentStr})`;
+    }
+
+    str() {
+        return this.stringify();
     }
 }
 
-// TODO: make it possible to add arguments to the function call
-export class FunctionCallElement<ForComponent> implements TemplateElement {
-    private componentPropertyKey: keyof ForComponent;
-
-    constructor(componentPropertyKey: keyof ForComponent) {
-        this.componentPropertyKey = componentPropertyKey;
-    }
-
-    stringify(): string {
-        return `${this.componentPropertyKey}()`;
-    }
-}
-
-export interface TemplateClass<ForComponent> {
+export interface TemplateClass {
     getName(): string;
+    getComponentPrototype(): any;
     getTemplateBody(): TemplateElement[];
 }
 
-export abstract class Template<ForComponent> implements TemplateClass<ForComponent> {
+export abstract class Template<ForComponent> implements TemplateClass {
     private elements: TemplateElement[] = [];
 
     abstract getName(): string;
+    abstract getComponentPrototype(): any;
     abstract getTemplateBody(): TemplateElement[];
 
     stringify(): string {
@@ -250,18 +307,6 @@ export abstract class Template<ForComponent> implements TemplateClass<ForCompone
         return this;
     }
 
-    getComponentProperty<PropertyKey extends keyof ForComponent>(key: PropertyKey): string {
-        return key;
-    }
-
-    prop<PropertyKey extends keyof ForComponent>(key: PropertyKey): string {
-        return this.getComponentProperty(key);
-    }
-
-    interpolateProperty<PropertyKey extends keyof ForComponent>(key: PropertyKey): string {
-        return `{{${key}}}`;
-    }
-
     buildTagElement(tag: string): TagElementBuilder {
         return new TagElementBuilder().setTag(tag);
     }
@@ -278,16 +323,16 @@ export abstract class Template<ForComponent> implements TemplateClass<ForCompone
         return this.createStringElement(str);
     }
 
-    createPropertyInterpolationElement<PropertyKey extends keyof ForComponent>(key: PropertyKey): PropertyInterpolationElement<ForComponent> {
-        return new PropertyInterpolationElement(key);
+    getComponentProperty<PropertyKey extends keyof ForComponent>(key: PropertyKey): PropertyElement<ForComponent> {
+        return new PropertyElement<ForComponent>(key);
     }
 
-    pie<PropertyKey extends keyof ForComponent>(key: PropertyKey): PropertyInterpolationElement<ForComponent> {
-        return this.createPropertyInterpolationElement(key);
+    prop<PropertyKey extends keyof ForComponent>(key: PropertyKey): PropertyElement<ForComponent> {
+        return this.getComponentProperty(key);
     }
 
     createFunctionCallElement<PropertyKey extends keyof ForComponent>(key: PropertyKey): FunctionCallElement<ForComponent> {
-        return new FunctionCallElement(key);
+        return new FunctionCallElement<ForComponent>(this.getComponentPrototype(), key);
     }
 
     call<FuncKey extends keyof ForComponent>(key: FuncKey): FunctionCallElement<ForComponent> {
