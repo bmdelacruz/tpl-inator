@@ -1,5 +1,5 @@
 # tpl-inator
-[![npm version](https://badge.fury.io/js/tpl-inator.svg)](https://badge.fury.io/js/tpl-inator)
+[![npm version](https://badge.fury.io/js/tpl-inator.svg)](https://www.npmjs.com/package/tpl-inator)
 
 An experimental template generator that can be used with Angular to enable template static type checking. This had been made possible by the use of Typescript's `keyof` operator. 
 
