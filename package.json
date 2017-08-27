@@ -1,7 +1,11 @@
 {
-  "name": "angular-tpl-inator",
-  "version": "1.0.0",
+  "name": "tpl-inator",
+  "version": "0.0.1",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmdelacruz/tpl-inator"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,9 +13,9 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["template", "typescript", "angular"],
+  "author": "Bryan Dela Cruz <bdshi13@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "typescript": "^2.4.2"
   }
