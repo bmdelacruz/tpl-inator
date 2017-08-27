@@ -1,4 +1,6 @@
 # tpl-inator
+[![npm version](https://badge.fury.io/js/tpl-inator.svg)](https://badge.fury.io/js/tpl-inator)
+
 An experimental template generator that can be used with Angular to enable template static type checking. This had been made possible by the use of Typescript's `keyof` operator. 
 
 By using this template generator, errors in the component's template, e.g. wrong spelling of property and/or function, may be reduced because the properties being accessed on the component's template are now checked during the compilation of code instead of during runtime.
