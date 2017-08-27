@@ -1,6 +1,6 @@
 {
   "name": "tpl-inator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An experimental template generator that can be used with Angular to enable template static type checking.",
   "repository": {
     "type": "git",
@@ -13,7 +13,11 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["template", "typescript", "angular"],
+  "keywords": [
+    "template",
+    "typescript",
+    "angular"
+  ],
   "author": "Bryan Dela Cruz <bdshi13@gmail.com>",
   "license": "MIT",
   "devDependencies": {
